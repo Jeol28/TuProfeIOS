@@ -1,0 +1,87 @@
+# ============================================================
+# Archivos sensibles — NUNCA subir al repositorio
+# ============================================================
+
+# Firebase / Google Services (contiene API keys y configuración privada)
+GoogleService-Info.plist
+google-services.json
+
+# Archivos de configuración con secretos
+*.xcconfig.secret
+Secrets.swift
+Config.secret.*
+APIKeys.swift
+APIKeys.plist
+
+# ============================================================
+# Xcode
+# ============================================================
+
+# Datos de usuario (configuraciones locales, breakpoints, etc.)
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# Build artifacts
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Playground output
+timeline.xctimeline
+playground.xcworkspace
+
+# ============================================================
+# Swift Package Manager
+# ============================================================
+.build/
+.swiftpm/
+*.resolved
+Packages/
+Package.pins
+
+# ============================================================
+# CocoaPods
+# ============================================================
+Pods/
+*.xcworkspace
+
+# ============================================================
+# Fastlane
+# ============================================================
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+fastlane/*.env
+.env
+.env.*
+AppFile
+Matchfile
+
+# ============================================================
+# macOS
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ============================================================
+# Certificados y perfiles de aprovisionamiento
+# ============================================================
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+
+# ============================================================
+# Archivos de caché y temporales
+# ============================================================
+*.swp
+*.lock
+.idea/
