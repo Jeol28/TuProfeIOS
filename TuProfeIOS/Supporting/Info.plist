@@ -39,9 +39,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
-	<key>GROQ_API_KEY</key>
-	<string>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</string>
-	<key>UILaunchStoryboardName</key>
+<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>CFBundleURLTypes</key>
 	<array>

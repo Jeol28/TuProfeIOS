@@ -1,4 +1,5 @@
 import Foundation
+import FirebaseAuth
 
 // MARK: - API Error (used across repositories)
 
@@ -20,62 +21,44 @@ enum APIError: Error, LocalizedError {
     }
 }
 
-// MARK: - GROQ AI Service (OpenAI-compatible, model llama-3.3-70b-versatile)
+// MARK: - GROQ AI Service (proxied via Cloud Function)
 
 class GroqAIService {
     static let shared = GroqAIService()
 
-    private let apiKey: String = {
-        Bundle.main.object(forInfoDictionaryKey: "GROQ_API_KEY") as? String ?? ""
-    }()
-
-    private let baseURL = "https://api.groq.com/openai/v1/chat/completions"
-    private let model = "llama-3.3-70b-versatile"
+    private let functionURL = "https://us-central1-tuprofe-89d43.cloudfunctions.net/generateReviewSummary"
 
     func generateReviewSummary(reviews: [ReviewInfo]) async throws -> String {
-        guard !apiKey.isEmpty else {
-            throw APIError.serverError(401, "GROQ API key no configurada")
+        guard let user = Auth.auth().currentUser else {
+            throw APIError.serverError(401, "Usuario no autenticado")
         }
 
-        let reviewsText = reviews.prefix(20).map { "- \($0.content)" }.joined(separator: "\n")
+        let idToken = try await user.getIDToken()
 
-        let requestBody: [String: Any] = [
-            "model": model,
-            "messages": [
-                [
-                    "role": "system",
-                    "content": "Eres un asistente experto en analizar reseñas de profesores. Resume los puntos clave (lo bueno y lo malo) de forma muy concisa y objetiva en español. Usa un tono profesional."
-                ],
-                [
-                    "role": "user",
-                    "content": "Basado en estas reseñas de alumnos, genera un resumen corto:\n\n\(reviewsText)"
-                ]
-            ],
-            "max_tokens": 300,
-            "temperature": 0.7
+        let body: [String: Any] = [
+            "reviews": reviews.prefix(20).map { $0.content }
         ]
 
-        guard let url = URL(string: baseURL) else { throw APIError.invalidURL }
+        guard let url = URL(string: functionURL) else { throw APIError.invalidURL }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        request.setValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            throw APIError.serverError(0, "Error en GROQ API")
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw APIError.serverError(code, "Error en el servicio de resumen")
         }
 
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let choices = json["choices"] as? [[String: Any]],
-              let message = choices.first?["message"] as? [String: Any],
-              let content = message["content"] as? String else {
-            throw APIError.decodingError(NSError(domain: "GROQ", code: 0))
+              let summary = json["summary"] as? String else {
+            throw APIError.decodingError(NSError(domain: "GroqSummary", code: 0))
         }
 
-        return content.trimmingCharacters(in: .whitespacesAndNewlines)
+        return summary
     }
 }
