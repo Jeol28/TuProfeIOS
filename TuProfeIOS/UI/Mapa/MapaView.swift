@@ -51,15 +51,20 @@ struct MapaView: View {
                     if cluster.isCluster {
                         ClusterBadge(cluster: cluster) {
                             viewModel.selectCluster(cluster)
+                            withAnimation(.easeInOut(duration: 0.7)) {
+                                region.center = cluster.coordinate
+                                region.span = MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
+                            }
                         }
                     } else if let marker = cluster.markers.first {
                         ReviewMapPin(marker: marker) {
                             viewModel.selectMarker(marker)
-                            withAnimation(.easeInOut(duration: 0.5)) {
+                            withAnimation(.easeInOut(duration: 0.7)) {
                                 region.center = CLLocationCoordinate2D(
                                     latitude: marker.latitude,
                                     longitude: marker.longitude
                                 )
+                                region.span = MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)
                             }
                         }
                     }
@@ -136,8 +141,8 @@ struct MapaView: View {
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 region.span = MKCoordinateSpan(
-                                    latitudeDelta: max(region.span.latitudeDelta / 2, 0.002),
-                                    longitudeDelta: max(region.span.longitudeDelta / 2, 0.002)
+                                    latitudeDelta: max(region.span.latitudeDelta / 2, 0.0001),
+                                    longitudeDelta: max(region.span.longitudeDelta / 2, 0.0001)
                                 )
                             }
                         }) {
